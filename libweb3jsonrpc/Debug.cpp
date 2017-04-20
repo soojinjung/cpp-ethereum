@@ -142,14 +142,11 @@ Json::Value Debug::debug_storageRangeAt(string const& _blockHashOrNumber, int _t
 
 		// begin is inclusive
 		auto itBegin = storage.lower_bound(h256fromHex(_begin));
-
-		for (auto it = itBegin; it != storage.end(); ++it)
+		auto it = itBegin;
+		for (; it != storage.end(); ++it)
 		{
 			if (ret["storage"].size() == static_cast<unsigned>(_maxResults))
-			{
-				ret["complete"] = false;
 				break;
-			}
 
 			Json::Value keyValue(Json::objectValue);
 			std::string hashedKey = toCompactHex(it->first, HexPrefix::Add, 1);
@@ -158,6 +155,8 @@ Json::Value Debug::debug_storageRangeAt(string const& _blockHashOrNumber, int _t
 
 			ret["storage"][hashedKey] = keyValue;
 		}
+		if (it != storage.end())
+			ret["nextKey"] = toCompactHex((++it)->first, HexPrefix::Add, 1);
 	}
 	catch (Exception const& _e)
 	{
